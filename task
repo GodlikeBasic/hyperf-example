@@ -1,0 +1,125 @@
+#!/usr/bin/env bash
+
+SERVICE='hyperf-example'
+
+function service_name {
+  echo ${SERVICE}
+}
+
+function bash {
+  docker-compose run ${SERVICE} bash
+}
+
+# start containers
+function start {
+  docker-compose run -d ${SERVICE} --name ${SERVICE} php /opt/www/bin/hyperf.php start
+}
+
+# restart containers
+function restart {
+  docker-compose restart
+}
+
+# stop containers
+function stop {
+  docker-compose down
+}
+
+# initialize application
+function init {
+  echo "Stating Initialization..."
+
+  echo "Copy .env file..."
+  cp -n .env.example .env
+
+  echo "Build docker images..."
+  docker-compose build
+
+  echo "Initialization completed!"
+}
+
+# initialize application
+function reinstall {
+  echo "Stating Initialization..."
+
+  echo "Copy .env file..."
+  cp .env.example .env
+
+  echo "Build docker images..."
+  docker-compose build
+
+  echo "Reinstall PHP dependencies..."
+  docker-compose run ${SERVICE} sh -c 'rm -rf ./vendor;composer install'
+
+  echo "Reinstall completed!"
+}
+
+# login to container
+function login {
+  echo "Attempt to login ${SERVICE} container..."
+  docker-compose exec ${SERVICE} bash
+}
+
+# show container logs
+function logs {
+  docker-compose logs $1
+}
+
+function migrate {
+  docker-compose exec ${SERVICE} sh -c 'php bin/hyperf.php migrate $1'
+}
+
+function help {
+  echo "    service_name"
+  echo "    bash"
+  echo "    start"
+  echo "    restart"
+  echo "    stop"
+  echo "    init"
+  echo "    reinstall"
+  echo "    login"
+  echo "    logs {optional container name}"
+  echo "    migrate --force - optional"
+}
+
+subcommand=$1
+shift
+
+case $subcommand in
+start)
+  start $@
+  ;;
+restart)
+  restart
+  ;;
+stop)
+  stop
+  ;;
+init)
+  init
+  ;;
+reinstall)
+  reinstall
+  ;;
+login)
+  login
+  ;;
+logs)
+  logs $1
+  ;;
+migrate)
+  migrate $1
+  ;;
+service_name)
+  service_name
+  ;;
+bash)
+  bash
+  ;;
+help)
+  help
+  ;;
+*)
+  echo "help"
+  ;;
+esac
