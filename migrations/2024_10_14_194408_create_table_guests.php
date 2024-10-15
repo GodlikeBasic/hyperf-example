@@ -25,7 +25,7 @@ return new class extends Migration {
             $table->string('last_name');
             $table->string('phone')->unique();
             $table->string('email')->unique()->nullable();
-            $table->unsignedInteger('country_id');
+            $table->unsignedBigInteger('country_id');
             $table->datetimes();
 
             $table->foreign('country_id')->references('id')->on('countries')->cascadeOnUpdate();

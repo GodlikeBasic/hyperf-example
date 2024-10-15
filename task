@@ -6,13 +6,9 @@ function service_name {
   echo ${SERVICE}
 }
 
-function bash {
-  docker-compose run ${SERVICE} bash
-}
-
 # start containers
 function start {
-  docker-compose run -d ${SERVICE} --name ${SERVICE} php /opt/www/bin/hyperf.php start
+  docker-compose up -d --build
 }
 
 # restart containers
@@ -22,7 +18,7 @@ function restart {
 
 # stop containers
 function stop {
-  docker-compose down
+  docker-compose stop
 }
 
 # initialize application
@@ -38,22 +34,6 @@ function init {
   echo "Initialization completed!"
 }
 
-# initialize application
-function reinstall {
-  echo "Stating Initialization..."
-
-  echo "Copy .env file..."
-  cp .env.example .env
-
-  echo "Build docker images..."
-  docker-compose build
-
-  echo "Reinstall PHP dependencies..."
-  docker-compose run ${SERVICE} sh -c 'rm -rf ./vendor;composer install'
-
-  echo "Reinstall completed!"
-}
-
 # login to container
 function login {
   echo "Attempt to login ${SERVICE} container..."
@@ -65,18 +45,22 @@ function logs {
   docker-compose logs $1
 }
 
+function init_db {
+  docker-compose exec ${SERVICE} sh -c 'php bin/hyperf.php migrate:install'
+  migrate
+  docker-compose exec ${SERVICE} sh -c 'php bin/hyperf.php db:seed'
+}
+
 function migrate {
   docker-compose exec ${SERVICE} sh -c 'php bin/hyperf.php migrate $1'
 }
 
 function help {
   echo "    service_name"
-  echo "    bash"
   echo "    start"
   echo "    restart"
   echo "    stop"
   echo "    init"
-  echo "    reinstall"
   echo "    login"
   echo "    logs {optional container name}"
   echo "    migrate --force - optional"
@@ -98,8 +82,8 @@ stop)
 init)
   init
   ;;
-reinstall)
-  reinstall
+init_db)
+  init_db
   ;;
 login)
   login
@@ -107,14 +91,14 @@ login)
 logs)
   logs $1
   ;;
+install)
+  install
+  ;;
 migrate)
   migrate $1
   ;;
 service_name)
   service_name
-  ;;
-bash)
-  bash
   ;;
 help)
   help

@@ -1,17 +1,22 @@
 services:
   mysql_db:
-    image: mysql:8
+    image: mysql:latest
     container_name: mysql_db_container
-    restart: always
     ports:
       - "3306:3306"
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
       MYSQL_DATABASE: ${DB_DATABASE}
-      MYSQL_USER: ${DB_PASSWORD}
-      MYSQL_PASSWORD: ${DB_PASSWORD}
     volumes:
       - ./dbdata:/var/lib/mysql/
+  phpmyadmin:
+    container_name: phpmyadmin_container
+    image: phpmyadmin/phpmyadmin:latest
+    ports:
+      - "8080:80"
+    environment:
+      PMA_HOST: mysql_db
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
   redis:
     image: redis:latest
     container_name: redis_container
